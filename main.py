@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import math
 
 db_name = 'my_db.db'
 conn = sqlite3.connect(db_name, check_same_thread=False)
@@ -75,27 +76,78 @@ def apply_purchase(customer_id, product_id, quantity, commit:bool):
     if commit:
         conn.commit()
 
-def get_all_purchases_count():
-    cursor.execute('''
-        SELECT SUM(quantity) FROM orders
-        ''')
-    return cursor.fetchall()
-
-def get_orders_per_customer():
-    cursor.execute('''
-        SELECT customers.customer_id, customers.first_name, customers.last_name, COUNT(orders.order_id) as order_count FROM customers
-        INNER JOIN orders ON customers.customer_id = orders.customer_id
-        GROUP BY customers.customer_id
-        ''')
-    return cursor.fetchall()
-
 def get_products_list():
     cursor.execute('''
     SELECT * FROM products
     ''')
     return cursor.fetchall()
 
-def get_avg_sum_per_order():
+def get_all_income():
     cursor.execute('''
-SELECT  
-''')
+    SELECT SUM(quantity), price FROM ORDERS
+    INNER JOIN products ON orders.product_id = products.product_id
+    GROUP BY products.product_id
+    ''')
+    income = sum([math.prod(row) for row in cursor.fetchall()])
+    return income
+
+def get_order_count_per_customer():
+    cursor.execute('''
+    SELECT first_name, email, count(orders.order_id) FROM customers
+    INNER JOIN orders ON customers.customer_id = orders.customer_id
+    GROUP BY customers.customer_id''')
+    return cursor.fetchall()
+
+def get_avg_check():
+    cursor.execute('''
+    SELECT orders.order_id, orders.quantity, products.price FROM orders
+    INNER JOIN products ON orders.product_id = products.product_id
+    ''')
+
+    check = [(row[1]*row[2]) for row in cursor.fetchall()]
+    check = sum(check)/len(check)
+
+    return check
+
+def get_the_most_wanted_category():
+    cursor.execute('''
+        SELECT category, MAX(orders) FROM (SELECT products.category, SUM(orders.quantity) as orders FROM products
+        INNER JOIN orders ON orders.product_id = products.product_id
+        GROUP BY products.category)
+        ''')
+    return cursor.fetchall()
+
+def get_product_count_per_category():
+    cursor.execute('''
+        SELECT category, COUNT() FROM products
+        GROUP BY category
+        ''')
+    return cursor.fetchall()
+
+def raise_the_price_of(category, commit:bool):
+    cursor.execute('''
+        SELECT product_id, price FROM products WHERE category = (?)
+        ''', (category,))
+    price_id_list = [(row[1]*1.1, row[0]) for row in cursor.fetchall()]
+    cursor.executemany('''
+        UPDATE products SET price = (?)
+        WHERE product_id = (?)
+        ''', price_id_list)
+    if commit:
+        conn.commit()
+
+def get_categories():
+    cursor.execute('''
+        SELECT category FROM products
+        GROUP BY category
+        ''')
+    return [row[0] for row in cursor.fetchall()]
+
+def add_item(item_name, category, price, commit:bool):
+    cursor.execute('''
+        INSERT INTO products (name, category, price)
+        VALUES ((?), (?), (?))
+        ''', (item_name, category, price))
+    
+    if commit:
+        conn.commit()
