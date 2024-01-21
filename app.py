@@ -42,6 +42,7 @@ while run:
 4. Place an order
 5. See full income information
 6. See order count per customer
+7. See how much money people spend in one order on avarage
 0. Exit''')
     answer = int(input('enter your answer (1-5):'))
     if answer == 1:
@@ -69,6 +70,9 @@ while run:
         for number, row in enumerate(main.get_order_count_per_customer(), 1):
             first_name, email, count = row
             print("{:<5} {:<15} {:<25} {:<3}".format(number, first_name, email, count))
+
+    elif answer == 7:
+        print(f'The avarage money-waste per order is {main.get_avg_check()}USD')
 
     elif answer == 0:
         run = False

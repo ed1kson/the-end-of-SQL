@@ -98,4 +98,13 @@ def get_order_count_per_customer():
     GROUP BY customers.customer_id''')
     return cursor.fetchall()
 
-def 
+def get_avg_check():
+    cursor.execute('''
+    SELECT orders.order_id, orders.quantity, products.price FROM orders
+    INNER JOIN products ON orders.product_id = products.product_id
+    ''')
+
+    check = [(row[1]*row[2]) for row in cursor.fetchall()]
+    check = sum(check)/len(check)
+
+    return check
