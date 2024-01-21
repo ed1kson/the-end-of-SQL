@@ -57,21 +57,23 @@ def get_id_by_email(email):
         ''', (email,))
     return cursor.fetchall()
 
-def sign_up(first_name, last_name, email):
+def sign_up(first_name, last_name, email, commit:bool):
     cursor.execute('''
         INSERT INTO customers(first_name, last_name, email)
-        VALUES((?), (?), (?))
-        ''')
-    conn.commit()
+        VALUES((?), (?), (?)) 
+        ''', (first_name, last_name, email))
+    if commit:
+        conn.commit()
 
-def apply_purchase(customer_id, product_id, quantity):
+def apply_purchase(customer_id, product_id, quantity, commit:bool):
     date = datetime.datetime.now()
 
     cursor.execute('''
         INSERT INTO orders(customer_id, product_id, quantity, order_date)
         VALUES ((?), (?), (?), (?))
         ''', (customer_id, product_id, quantity, date))
-    conn.commit()
+    if commit:
+        conn.commit()
 
 def get_all_purchases_count():
     cursor.execute('''
@@ -81,10 +83,19 @@ def get_all_purchases_count():
 
 def get_orders_per_customer():
     cursor.execute('''
-        SELECT customers.customer_id, customers.first_name, customers.last_name, COUNT(orders.order_id) FROM customers
+        SELECT customers.customer_id, customers.first_name, customers.last_name, COUNT(orders.order_id) as order_count FROM customers
         INNER JOIN orders ON customers.customer_id = orders.customer_id
         GROUP BY customers.customer_id
         ''')
     return cursor.fetchall()
 
-print(get_orders_per_customer())
+def get_products_list():
+    cursor.execute('''
+    SELECT * FROM products
+    ''')
+    return cursor.fetchall()
+
+def get_avg_sum_per_order():
+    cursor.execute('''
+SELECT  
+''')
