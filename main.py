@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 
 db_name = 'my_db.db'
 conn = sqlite3.connect(db_name, check_same_thread=False)
@@ -50,4 +51,40 @@ def create_tables():
     conn.commit()
 
 #functions
-def 
+def get_id_by_email(email):
+    cursor.execute('''
+        SELECT customer_id FROM customers WHERE email = (?)
+        ''', (email,))
+    return cursor.fetchall()
+
+def sign_up(first_name, last_name, email):
+    cursor.execute('''
+        INSERT INTO customers(first_name, last_name, email)
+        VALUES((?), (?), (?))
+        ''')
+    conn.commit()
+
+def apply_purchase(customer_id, product_id, quantity):
+    date = datetime.datetime.now()
+
+    cursor.execute('''
+        INSERT INTO orders(customer_id, product_id, quantity, order_date)
+        VALUES ((?), (?), (?), (?))
+        ''', (customer_id, product_id, quantity, date))
+    conn.commit()
+
+def get_all_purchases_count():
+    cursor.execute('''
+        SELECT SUM(quantity) FROM orders
+        ''')
+    return cursor.fetchall()
+
+def get_orders_per_customer():
+    cursor.execute('''
+        SELECT customers.customer_id, customers.first_name, customers.last_name, COUNT(orders.order_id) FROM customers
+        INNER JOIN orders ON customers.customer_id = orders.customer_id
+        GROUP BY customers.customer_id
+        ''')
+    return cursor.fetchall()
+
+print(get_orders_per_customer())
