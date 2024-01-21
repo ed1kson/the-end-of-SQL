@@ -12,6 +12,9 @@ def log_in():
         if answer:
             sign_up()
             log_in()
+            return True
+        else:
+            return False
 
 def sign_up():
     first_name = input('enter your first name please:')
@@ -48,8 +51,8 @@ while run:
             place_an_order()
         else:
             print('you have to log in first')
-            log_in()
-            place_an_order()
+            if log_in():
+                place_an_order()
     elif answer == 5:
         run = False
     else:
