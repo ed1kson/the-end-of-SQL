@@ -31,6 +31,7 @@ def place_an_order():
     commit = True if input('Do you want to save changes in database?(yes/no):').lower() == 'yes' else False
     main.apply_purchase(customer_id, product_id, quantity, commit)
 
+#the app cycle
 run = True
 while run:
     print('''
