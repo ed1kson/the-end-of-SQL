@@ -108,3 +108,46 @@ def get_avg_check():
     check = sum(check)/len(check)
 
     return check
+
+def get_the_most_wanted_category():
+    cursor.execute('''
+        SELECT category, MAX(orders) FROM (SELECT products.category, SUM(orders.quantity) as orders FROM products
+        INNER JOIN orders ON orders.product_id = products.product_id
+        GROUP BY products.category)
+        ''')
+    return cursor.fetchall()
+
+def get_product_count_per_category():
+    cursor.execute('''
+        SELECT category, COUNT() FROM products
+        GROUP BY category
+        ''')
+    return cursor.fetchall()
+
+def raise_the_price_of(category, commit:bool):
+    cursor.execute('''
+        SELECT product_id, price FROM products WHERE category = (?)
+        ''', (category,))
+    price_id_list = [(row[1]*1.1, row[0]) for row in cursor.fetchall()]
+    cursor.executemany('''
+        UPDATE products SET price = (?)
+        WHERE product_id = (?)
+        ''', price_id_list)
+    if commit:
+        conn.commit()
+
+def get_categories():
+    cursor.execute('''
+        SELECT category FROM products
+        GROUP BY category
+        ''')
+    return [row[0] for row in cursor.fetchall()]
+
+def add_item(item_name, category, price, commit:bool):
+    cursor.execute('''
+        INSERT INTO products (name, category, price)
+        VALUES ((?), (?), (?))
+        ''', (item_name, category, price))
+    
+    if commit:
+        conn.commit()
